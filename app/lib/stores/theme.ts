@@ -1,7 +1,7 @@
 import { atom } from 'nanostores';
 import { logStore } from './logs';
 
-export type Theme = 'dark' | 'light';
+export type Theme = 'dark' | 'light' | 'forest';
 
 export const kTheme = 'bolt_theme';
 
@@ -9,35 +9,30 @@ export function themeIsDark() {
   return themeStore.get() === 'dark';
 }
 
-export const DEFAULT_THEME = 'light';
+export const DEFAULT_THEME: Theme = 'light';
 
 export const themeStore = atom<Theme>(initStore());
 
-function initStore() {
+function initStore(): Theme {
   if (!import.meta.env.SSR) {
     const persistedTheme = localStorage.getItem(kTheme) as Theme | undefined;
-    const themeAttribute = document.querySelector('html')?.getAttribute('data-theme');
+    const themeAttribute = document.querySelector('html')?.getAttribute('data-theme') as Theme | null;
 
-    return persistedTheme ?? (themeAttribute as Theme) ?? DEFAULT_THEME;
+    return persistedTheme === 'forest' || persistedTheme === 'dark' || persistedTheme === 'light'
+      ? persistedTheme
+      : themeAttribute === 'forest' || themeAttribute === 'dark' || themeAttribute === 'light'
+        ? themeAttribute
+        : DEFAULT_THEME;
   }
 
   return DEFAULT_THEME;
 }
 
-export function toggleTheme() {
-  const currentTheme = themeStore.get();
-  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
-  // Update the theme store
+export function setTheme(newTheme: Theme) {
   themeStore.set(newTheme);
-
-  // Update localStorage
   localStorage.setItem(kTheme, newTheme);
-
-  // Update the HTML attribute
   document.querySelector('html')?.setAttribute('data-theme', newTheme);
 
-  // Update user profile if it exists
   try {
     const userProfile = localStorage.getItem('bolt_user_profile');
 
@@ -51,4 +46,10 @@ export function toggleTheme() {
   }
 
   logStore.logSystem(`Theme changed to ${newTheme} mode`);
+}
+
+export function toggleTheme() {
+  const currentTheme = themeStore.get();
+  const newTheme: Theme = currentTheme === 'dark' ? 'light' : 'dark';
+  setTheme(newTheme);
 }
