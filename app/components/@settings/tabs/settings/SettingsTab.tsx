@@ -5,6 +5,8 @@ import { classNames } from '~/utils/classNames';
 import { Switch } from '~/components/ui/Switch';
 import type { UserProfile } from '~/components/@settings/core/types';
 import { isMac } from '~/utils/os';
+import { setTheme, themeStore, type Theme } from '~/lib/stores/theme';
+import { useStore } from '@nanostores/react';
 
 // Helper to get modifier key symbols/text
 const getModifierSymbol = (modifier: string): string => {
@@ -22,12 +24,14 @@ const getModifierSymbol = (modifier: string): string => {
 
 export default function SettingsTab() {
   const [currentTimezone, setCurrentTimezone] = useState('');
+  const activeTheme = useStore(themeStore);
   const [settings, setSettings] = useState<UserProfile>(() => {
     const saved = localStorage.getItem('bolt_user_profile');
     return saved
       ? JSON.parse(saved)
       : {
           notifications: true,
+          theme: 'light',
           language: 'en',
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         };
@@ -69,8 +73,32 @@ export default function SettingsTab() {
         transition={{ delay: 0.1 }}
       >
         <div className="flex items-center gap-2 mb-4">
-          <div className="i-ph:palette-fill w-4 h-4 text-purple-500" />
+          <div className="i-ph:palette-fill w-4 h-4 text-[#2F5D50]" />
           <span className="text-sm font-medium text-bolt-elements-textPrimary">Preferences</span>
+        </div>
+
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="i-ph:paint-brush-fill w-4 h-4 text-bolt-elements-textSecondary" />
+            <label className="block text-sm text-bolt-elements-textSecondary">App Theme</label>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {(['light', 'dark', 'forest'] as Theme[]).map((theme) => (
+              <button
+                key={theme}
+                type="button"
+                onClick={() => setTheme(theme)}
+                className={classNames(
+                  'px-3 py-2 rounded-lg text-sm font-medium border transition-all duration-200',
+                  activeTheme === theme
+                    ? 'border-[#2F5D50] bg-[#2F5D50] text-white shadow-sm'
+                    : 'border-[#D5E1DC] bg-white text-[#17352E] hover:border-[#2F5D50] hover:bg-[#F1F5F3]',
+                )}
+              >
+                {theme === 'forest' ? 'Forest Luxury' : theme[0].toUpperCase() + theme.slice(1)}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div>
@@ -86,7 +114,7 @@ export default function SettingsTab() {
               'bg-[#FAFAFA] dark:bg-[#0A0A0A]',
               'border border-[#E5E5E5] dark:border-[#1A1A1A]',
               'text-bolt-elements-textPrimary',
-              'focus:outline-none focus:ring-2 focus:ring-purple-500/30',
+              'focus:outline-none focus:ring-2 focus:ring-[#2F5D50]/30',
               'transition-all duration-200',
             )}
           >
@@ -149,7 +177,7 @@ export default function SettingsTab() {
         transition={{ delay: 0.2 }}
       >
         <div className="flex items-center gap-2 mb-4">
-          <div className="i-ph:clock-fill w-4 h-4 text-purple-500" />
+          <div className="i-ph:clock-fill w-4 h-4 text-[#2F5D50]" />
           <span className="text-sm font-medium text-bolt-elements-textPrimary">Time Settings</span>
         </div>
 
